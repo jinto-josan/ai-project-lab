@@ -1,0 +1,95 @@
+{
+    "name": "search-1760535411990-skillset",
+    "skills": [
+      {
+        "@odata.type": "#Microsoft.Skills.Text.SplitSkill",
+        "name": "splitSkill",
+        "context": "/document",
+        "defaultLanguageCode": "en",
+        "textSplitMode": "sentences",
+        "inputs": [
+          {
+            "name": "text",
+            "source": "/document/content",
+            "inputs": []
+          }
+        ],
+        "outputs": [
+          {
+            "name": "textItems",
+            "targetName": "sentences"
+          }
+        ]
+      },
+      {
+        "@odata.type": "#Microsoft.Skills.Text.V3.SentimentSkill",
+        "name": "sentimentSkill",
+        "description": "To get sentiments",
+        "context": "/document/sentences/*",
+        "defaultLanguageCode": "en",
+        "includeOpinionMining": false,
+        "inputs": [
+          {
+            "name": "text",
+            "source": "/document/sentences/*",
+            "inputs": []
+          }
+        ],
+        "outputs": [
+          {
+            "name": "sentiment",
+            "targetName": "sentiment"
+          }
+        ]
+      },
+      {
+        "@odata.type": "#Microsoft.Skills.Util.ShaperSkill",
+        "name": "shapeKnwldge",
+        "description": "ForKnowledgeStore",
+        "context": "/document/sentences/*",
+        "inputs": [
+          {
+            "name": "Sentence",
+            "source": "/document/sentences/*",
+            "inputs": []
+          },
+          {
+            "name": "Sentiment",
+            "source": "/document/sentences/*/sentiment",
+            "inputs": []
+          }
+        ],
+        "outputs": [
+          {
+            "name": "output",
+            "targetName": "tableProjection"
+          }
+        ]
+      }
+    ],
+    "cognitiveServices": {
+      "@odata.type": "#Microsoft.Azure.Search.AIServicesByKey",
+      "key": "<redacted>",
+      "subdomainUrl": "https://sentiment-service-ai-90.cognitiveservices.azure.com/"
+    },
+    "knowledgeStore": {
+      "storageConnectionString": "<redacted>",
+      "projections": [
+        {
+          "tables": [
+            {
+              "tableName": "sentimentanalysis",
+              "generatedKeyName": "id",
+              "source": "/document/sentences/*/tableProjection",
+              "inputs": []
+            }
+          ],
+          "objects": [],
+          "files": []
+        }
+      ],
+      "parameters": {
+        "synthesizeGeneratedKeyName": true
+      }
+    }
+  }

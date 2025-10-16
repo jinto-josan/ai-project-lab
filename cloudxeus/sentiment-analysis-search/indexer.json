@@ -1,0 +1,25 @@
+{
+    "name": "sentiment-indexer",
+    "description": null,
+    "dataSourceName": "azureblob-1760535592361-datasource",
+    "skillsetName": "search-1760535411990-skillset",
+    "targetIndexName": "sentiment-index-v1",
+    "disabled": null,
+    "schedule": null,
+    "parameters": null,
+    "fieldMappings": [],
+    "outputFieldMappings": [
+      {
+        "sourceFieldName": "/document/sentences/*/sentiment",
+        "targetFieldName": "sentiment",
+        "mappingFunction": null
+      },
+      {
+        "sourceFieldName": "/document/sentences",
+        "targetFieldName": "sentences",
+        "mappingFunction": null
+      }
+    ],
+    "cache": null,
+    "encryptionKey": null
+  }
