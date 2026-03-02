@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+langchain-community = "*"
 langchain = "*"
 langchain-openai = "*"
 python-dotenv = "*"
@@ -11,9 +12,9 @@ isort = "*"
 black = "*"
 langchain-ollama = "*"
 langchain-tavily = "*"
-tavily-python = "*"
+langchain-pinecone = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.14"
+python_version = "3.12"
