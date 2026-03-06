@@ -13,8 +13,17 @@ black = "*"
 langchain-ollama = "*"
 langchain-tavily = "*"
 langchain-pinecone = "*"
+rich = "*"
+streamlit = "*"
+langgraph = "*"
+beautifulsoup4 = "*"
+pytest = "*"
+chromadb = "*"
+langchain-chroma = "*"
+langchain-mcp-adapters = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.12"
