@@ -6,6 +6,7 @@ from mcp import ClientSession, StdioServerParameters
 from langchain_mcp_adapters.tools import  load_mcp_tools
 from langgraph.prebuilt import create_react_agent
 
+from langchain.chat_models import 
 
 
 llm = ChatOllama(model="qwen3:1.7b")

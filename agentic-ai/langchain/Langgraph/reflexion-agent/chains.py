@@ -7,7 +7,7 @@ from langchain_core.output_parsers import (
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage
 from langchain_ollama import ChatOllama
-from schemas import AnswerQuestion
+from schemas import AnswerQuestion, RevisedAnswer
 
 load_dotenv()
 
@@ -30,6 +30,25 @@ first_responder_prompt_template= actor_prompt.partial(first_instruction="Provide
 
 first_response_chain= first_responder_prompt_template | llm.bind_tools(
     tools=[AnswerQuestion], tool_choice="AnswerQuestion"
+)
+
+revise_instruction="""
+Revise your previous answer using new information.
+- You should use the previous critique to add information to your answer.
+- You must include numerical citation in your revised answer so that it can be verified.
+- Add a reference section to bottom of your answer (which doesnt count towards word limit ) . In form of
+[References]
+- [1] https://www.google.com
+- [2] https://www.google.com
+- [3] https://www.google.com
+
+- You should use the previous critique to remove superfluous information from your answer. and make sure it is within the word limit.
+
+
+"""
+
+revisor_chain= actor_prompt.partial(first_instruction=revise_instruction) | llm.bind_tools(
+    tools=[RevisedAnswer], tool_choice="RevisedAnswer"
 )
 
 if __name__=="__main__":

@@ -4,14 +4,14 @@ from langchain.chat_models import init_chat_model
 from langchain.agents import create_agent
 from langchain.messages import ToolMessage
 from langchain.tools import tool
-from langchain_pinecone import PineconeVectorStore
+from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings
 
 load_dotenv()
-vector_store = PineconeVectorStore(embedding=OllamaEmbeddings(model="qwen3-embedding"), 
-                                   index_name=os.environ["INDEX_NAME"])
+vector_store = Chroma(embedding_function=OllamaEmbeddings(model="qwen3-embedding"), 
+                                   persist_directory="./DocumentationRag/chroma_db")
 
-model = init_chat_model("qwen3-1.7b", temperature=0.2, model_provider="ollama")
+model = init_chat_model("qwen3:1.7b", temperature=0.0, model_provider="ollama")
 
 
 @tool(response_format="content_and_artifact")
@@ -38,7 +38,7 @@ def run_llm(query: str):
         "Use the retrieved documents to answer the user's question. If you don't know the answer, say you don't know. "
         "Always use all the retrieved documents to answer the question and provide a comprehensive answer."
     )
-    agent = create_agent(model=model, tools=[ToolMessage(search_docs)], system_prompt=system_prompt)
+    agent = create_agent(model=model, tools=[search_docs], system_prompt=system_prompt)
     message=[{"role":"user","content":query}]
     response = agent.invoke({"messages": message})
     answer= response["messages"][-1].content
@@ -48,3 +48,6 @@ def run_llm(query: str):
             if isinstance (message.artifact, list): #if the tool returns a list of documents, we want to extend the context_docs list with those documents.
                 context_docs.extend(message.artifact)
     return {"answer": answer, "context": context_docs}
+
+if __name__ == "__main__":
+    print(run_llm("What is langchain?"))

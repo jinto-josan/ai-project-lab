@@ -1,3 +1,4 @@
+from operator import itemgetter
 import os
 from dotenv import load_dotenv
 import asyncio
@@ -8,7 +9,7 @@ import certifi
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
-from langchain_pinecone import PineconeVectorStore
+from langchain_chroma import Chroma
 from langchain_tavily import TavilyCrawl,TavilyExtract, TavilyMap
 from langchain_core.documents import Document
 
@@ -22,9 +23,9 @@ os.environ["SSL_CERT_FILE"] = certifi.where()
 os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
 
 embeddings = OllamaEmbeddings(model="qwen3-embedding")
-vector_store = PineconeVectorStore(embedding    =embeddings, index_name=os.environ["INDEX_NAME"])
+vector_store = Chroma(embedding_function=embeddings, persist_directory="./DocumentationRag/chroma_db")
 tavily_extract= TavilyExtract()
-tavily_map= TavilyMap( max_depth=5, max_breadth=20, max_pages=10000)
+tavily_map= TavilyMap( max_depth=10, max_breadth=100, max_pages=10000)
 tavily_crawl=TavilyCrawl()
 
 async def main():
@@ -40,8 +41,11 @@ async def main():
         "extract_depth": "advanced", #extracts table, embeds, more data and takes more time.
         #"instructions": if certain pages need to be prioritized, we can provide instructions to tavily map to prioritize those pages. For example, if we want to prioritize the "Getting Started" page, we can provide the following instructions: "Prioritize crawling and extracting content from the 'Getting Started' page and its subpages."
     })
-    all_docs = res["documents"]
-    log_success(f"Crawled {len(all_docs)} documents.")
+    if res["error"]:
+        log_error(f"Error crawling: {res['error']}")
+        return
+    raw_docs = res["results"]
+    log_success(f"Crawled {len(raw_docs)} documents.")
 
 
     log_header("Document Chunking...")
@@ -50,9 +54,10 @@ async def main():
         chunk_size=4000,
         chunk_overlap=200
     )
+    documents = [Document(page_content=doc['raw_content']) for doc in raw_docs]
 
     # Split documents into chunks
-    splitted_docs= text_splitter.split_documents(all_docs)
+    splitted_docs= text_splitter.split_documents(documents) #raw_content in each dict
 
     log_success(f"Created {len(splitted_docs)} document chunks.")
     await store_in_vector_store(splitted_docs, batch_size=500)

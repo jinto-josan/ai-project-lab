@@ -4,18 +4,17 @@ import streamlit as st
 from backend.core import run_llm
 
 
-
+#pipenv run streamlit run main.py - to run the app
 
 def format_sources(context_docs:List[Any])-> List[str]:
     """Format the retrieved documents for display in the Streamlit app."""
     return [
-        str(
-            (meta.get("source", "Unknown")) 
-            for doc in (context_docs or [])
-            if (meta := getattr(doc, "metadata", None) or {})) is not None
+        str(meta.get("source", "Unknown"))
+        for doc in (context_docs or [])
+        if (meta := getattr(doc, "metadata", None) or {}) is not None
     ]
 
-st.set_page_config(page_title="Langchain documentation helper", layered="centered")
+st.set_page_config(page_title="Langchain documentation helper", layout="centered")
 st.title("Langchain Documentation Helper")
 
 with st.sidebar:
@@ -26,19 +25,21 @@ with st.sidebar:
 if "messages" not in st.session_state:
     st.session_state["messages"] = [
         {"role":"Assistant",
-         "content":"Hello! I'm here to help you with any questions you have about Langchain. "
-         "Ask me anything about the documentation, and I'll do my best to assist you!",
-         "context": []
+         "content":"Ask me anything about langchain docs. I will retrieve relevant context and cite the sources",
+         "sources": []
          }
     ]
+# this will be how the chat window be
 for message in st.session_state["messages"]:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        if message.get("context"):
+        if message.get("sources"):
             with st.expander("Sources"):
-                for doc in message["context"]:
+                for doc in message["sources"]:
                     source = doc.metadata.get("source", "Unknown")
                     st.markdown(f"- {source}")
+
+# this container will be where user will ask the question
 prompt = st.chat_input("Ask a question about Langchain documentation...")
 if prompt:
     st.session_state["messages"].append({"role":"user", "content": prompt, "context": []})
@@ -49,22 +50,18 @@ if prompt:
         try:
             with st.spinner("Searching for the answer..."):
                 result: Dict[str, Any] = run_llm(prompt)
-                answer = str(result.get("answer")).strip() or "Sorry, I couldn't find an answer to your question."
-                context_docs = format_sources(result.get("context", []))
+                answer = str(result.get("answer","")).strip() or "Sorry, I couldn't find an answer to your question."
+                sources = format_sources(result.get("context", []))
             st.markdown(answer)
-            if context_docs:
+            if sources:
                 with st.expander("Sources"):
-                    for doc in context_docs:
+                    for doc in sources:
                         st.markdown(f"- {doc}")
             st.session_state.messages.append(
-                {"role":"Assistant", "content": answer, "context": context_docs}
+                {"role":"Assistant", "content": answer, "sources": sources}
 
             ) # Clear the "Let me find the answer for you..." message
             
         except Exception as e:
             st.error(f"An error occurred while searching for the answer: {str(e)}")
             st.stop()
-    st.session_state["messages"] = st.session_state["messages"][-10:]
-    st.rerun()
-    result = run_llm(prompt)
-    st.session_state["messages"].append({"role":"Assistant", "content": result["answer"], "context": result["context"]})
