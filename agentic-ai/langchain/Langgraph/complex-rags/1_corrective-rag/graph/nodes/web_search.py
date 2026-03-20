@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from graph.state import GraphState
 from graph.chains.retriever_grader import GradeDocuments, retriever_grader
 from langchain_tavily import TavilySearch
+from langchain_core.documents import Document
 
 web_search_tool=TavilySearch(max_results=3)
 load_dotenv()

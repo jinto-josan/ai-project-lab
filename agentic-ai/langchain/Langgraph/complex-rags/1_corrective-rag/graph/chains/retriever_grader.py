@@ -2,9 +2,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from langchain_ollama import ChatOllama
 
-def GradeDocuments(BaseModel)->str:
+class GradeDocuments(BaseModel):
     """Binary score for relevance check on retrieved documents"""
-    binary_score: bool = Field(description="Documents are relevant to the question, yes or no  ")
+    binary_score: str = Field(description="Documents are relevant to the question, yes or no  ")
 
 
 structured_llm_grader= ChatOllama(model="qwen3:1.7b", temperature=0).with_structured_output(GradeDocuments)

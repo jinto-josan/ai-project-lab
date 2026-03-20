@@ -14,4 +14,4 @@ def grade_documents_node(state:GraphState)->Dict[str, Any]:
         else:
             websearch=True
             continue
-    return {"documents": filtered_documents, "question": question}
+    return {"documents": filtered_documents, "question": question, "websearch": websearch}

@@ -32,4 +32,4 @@ workflow.add_conditional_edges(GRADE_DOCUMENTS, decide_to_generate,
 workflow.add_edge(WEB_SEARCH, GENERATION)
 workflow.add_edge(GENERATION, END)
 app=workflow.compile()
-app.get_graph().draw_mermaid_png(output_file_path="flow.png")
+app.get_graph().draw_mermaid_png(output_file_path="./Langgraph/complex-rags/1_corrective-rag/flow.png")

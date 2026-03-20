@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from state import GraphState
+from graph.state import GraphState
 from ingestion import retriever
 
 

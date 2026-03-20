@@ -8,14 +8,15 @@ from typing import List
 load_dotenv()
 
 def ingest_data(urls:List[str])->None:
-    loaded_documents=[WebBaseLoader(url).load for url in urls]
+    loaded_documents=[WebBaseLoader(url).load() for url in urls]
     documents=[item for sublist in loaded_documents for item in sublist]
     text_splitter=RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=250, chunk_overlap=0)
     texts=text_splitter.split_documents(documents)
     embeddings=OllamaEmbeddings(model="qwen3-embedding")
-    Chroma.from_documents(documents=texts, embedding=embeddings, collection_name="langchain", persist_directory="./.chroma_db")
+    Chroma.from_documents(documents=texts, embedding=embeddings, collection_name="langchain", persist_directory="./Langgraph/complex-rags/1_corrective-rag/.chroma_db")
 
-retriever= Chroma(persist_directory="./.chroma_db", embedding_function=OllamaEmbeddings(model="qwen3-embedding")).as_retriever()
+retriever= Chroma(persist_directory="./Langgraph/complex-rags/1_corrective-rag/.chroma_db", 
+embedding_function=OllamaEmbeddings(model="qwen3-embedding")).as_retriever()
 
 
 if __name__ == "__main__":
